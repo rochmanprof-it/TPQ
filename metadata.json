@@ -1,0 +1,7 @@
+{
+  "name": "Sistem Pelaporan Ngaji TPQ",
+  "description": "Aplikasi digital pelaporan mengaji TPQ untuk mencatat kehadiran santri, progres hafalan, setoran iqro dan Al-Qur'an, evaluasi pengajar, serta portal wali murid.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
