@@ -21,7 +21,7 @@ export const SimpleCatatanTable: React.FC<SimpleCatatanTableProps> = ({
   onDeleteRecord,
   onOpenRaport
 }) => {
-  const canWrite = currentUser.role === 'pengajar' || currentUser.role === 'kepala';
+  const canWrite = currentUser.role === 'pengajar' || currentUser.role === 'kepala' || currentUser.role === 'admin';
   const isWali = currentUser.role === 'wali_murid';
 
   const [searchTerm, setSearchTerm] = useState('');

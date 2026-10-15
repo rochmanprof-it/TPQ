@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { User, Student, AttendanceRecord, SetoranRecord, TPQProfile, SetoranGrade } from './types';
+import { useState, useEffect } from 'react';
+import { Student, AttendanceRecord, SetoranRecord, TPQProfile, SetoranGrade, User } from './types';
 import { storage } from './services/storage';
+import { useAuth } from './services/useAuth';
 import { SimpleHeader } from './components/SimpleHeader';
 import { SimpleCatatanTable } from './components/SimpleCatatanTable';
 import { SimpleInputModal } from './components/SimpleInputModal';
 import { SimpleHafalanView } from './components/SimpleHafalanView';
 import { SimpleRaportView } from './components/SimpleRaportView';
 import { SimpleSantriManager } from './components/SimpleSantriManager';
+import { AdminUserManager } from './components/AdminUserManager';
 import { LoginView } from './components/LoginView';
-import { BookOpen, CheckCircle2, Award, FileText, UserCheck, ShieldCheck, HeartHandshake } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 
 export default function App() {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { user: currentUser, loading: authLoading, signOut } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [setoran, setSetoran] = useState<SetoranRecord[]>([]);
@@ -30,58 +30,45 @@ export default function App() {
   };
 
   useEffect(() => {
-    const loadedUsers = storage.getUsers();
-    const active = storage.getActiveUser();
     const loadedStudents = storage.getStudents();
     const loadedAttendance = storage.getAttendance();
     const loadedSetoran = storage.getSetoran();
-    const loadedProfile = storage.getProfile();
-
-    setUsers(loadedUsers);
-    setCurrentUser(active);
     setStudents(loadedStudents);
     setAttendance(loadedAttendance);
     setSetoran(loadedSetoran);
-    setProfile(loadedProfile);
-    setIsLoaded(true);
   }, []);
 
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
-    storage.setActiveUser(user);
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.role === 'admin') {
+        setActiveTab('kelola_akun');
+      } else {
+        setActiveTab('catatan');
+      }
+    }
+  }, [currentUser?.id]);
+
+  const handleLogout = async () => {
+    await signOut();
     setActiveTab('catatan');
-    showToast(`✓ Berhasil masuk sebagai ${user.name}`);
+    showToast('Anda telah keluar dari akun');
   };
 
-  const handleLogout = () => {
-    storage.clearActiveUser();
-    setCurrentUser(null);
-    showToast('✓ Anda telah keluar dari akun');
-  };
-
-  const handleSwitchUser = (user: User) => {
-    setCurrentUser(user);
-    storage.setActiveUser(user);
-    setActiveTab('catatan');
-    showToast(`✓ Beralih akun ke ${user.name}`);
-  };
-
-  if (!isLoaded) {
+  if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50 text-xs text-stone-500 font-mono">
-        Memuat data TPQ...
+      <div className="min-h-screen flex items-center justify-center bg-stone-50 text-stone-500">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-6 h-6 animate-spin text-emerald-700" />
+          <span className="text-xs font-medium">Memuat sesi pengguna...</span>
+        </div>
       </div>
     );
   }
 
-  // Jika belum login, tampilkan portal login peran
   if (!currentUser) {
     return (
       <>
-        <LoginView
-          users={users}
-          onLogin={handleLogin}
-        />
+        <LoginView />
         {toastMessage && (
           <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl border border-stone-800 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -127,7 +114,7 @@ export default function App() {
   const handleDeleteSetoran = (id: string) => {
     storage.deleteSetoran(id);
     setSetoran([...storage.getSetoran()]);
-    showToast('✓ Catatan mengaji berhasil dihapus');
+    showToast('Catatan mengaji berhasil dihapus');
   };
 
   const handleUpdateHafalan = (
@@ -147,7 +134,7 @@ export default function App() {
     setStudents([...storage.getStudents()]);
     setSetoran([...storage.getSetoran()]);
     setAttendance([...storage.getAttendance()]);
-    showToast(isNew ? `✓ Santri "${student.name}" berhasil didaftarkan` : `✓ Biodata "${student.name}" berhasil disimpan`);
+    showToast(isNew ? `Santri "${student.name}" berhasil didaftarkan` : `Biodata "${student.name}" berhasil disimpan`);
   };
 
   const handleDeleteStudent = (id: string) => {
@@ -157,31 +144,26 @@ export default function App() {
     setStudents([...storage.getStudents()]);
     setSetoran([...storage.getSetoran()]);
     setAttendance([...storage.getAttendance()]);
-    showToast(`✓ Santri "${studentName}" berhasil dihapus dari sistem TPQ`);
+    showToast(`Santri "${studentName}" berhasil dihapus dari sistem TPQ`);
   };
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
-      
+
       <div>
-        {/* Header Bersih & Profil Login Terverifikasi */}
         <SimpleHeader
           currentUser={currentUser}
-          users={users}
-          onSwitchUser={handleSwitchUser}
           onLogout={handleLogout}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
 
-        {/* Content Container */}
         <main className="max-w-6xl mx-auto px-4 py-6">
-          
-          {/* JIKA WALI MURID: TAMPILAN KHUSUS ORANG TUA (SUPER BERSIH & JELAS) */}
+
+          {/* WALI MURID: Read-only view of their child's data */}
           {isWali && childStudent ? (
             <div className="space-y-6">
-              
-              {/* Ringkasan Profil Anak */}
+
               <div className="bg-white rounded-2xl border border-stone-200/90 p-6 shadow-2xs">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
@@ -205,12 +187,11 @@ export default function App() {
                           : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'
                       }`}
                     >
-                      {activeTab === 'raport' ? '← Kembali ke Buku Harian' : '🖨️ Cetak Lembar Raport'}
+                      {activeTab === 'raport' ? 'Kembali ke Buku Harian' : 'Cetak Lembar Raport'}
                     </button>
                   </div>
                 </div>
 
-                {/* 3 Kotak Inti Capaian Anak */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-4 border-t border-stone-100 text-xs">
                   <div className="p-3 rounded-xl bg-stone-50 border border-stone-100">
                     <span className="text-stone-500 block">Posisi Mengaji Saat Ini:</span>
@@ -231,7 +212,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Tampilan Konten Wali */}
               {activeTab === 'raport' ? (
                 <SimpleRaportView
                   students={[childStudent]}
@@ -242,7 +222,6 @@ export default function App() {
                 />
               ) : (
                 <div className="space-y-6">
-                  {/* Riwayat Setoran Anak */}
                   <SimpleCatatanTable
                     records={setoran}
                     students={[childStudent]}
@@ -251,8 +230,6 @@ export default function App() {
                     onDeleteRecord={() => {}}
                     onOpenRaport={() => setActiveTab('raport')}
                   />
-
-                  {/* Daftar Surat yang Dihafal Anak */}
                   <SimpleHafalanView
                     students={[childStudent]}
                     currentUser={currentUser}
@@ -263,8 +240,13 @@ export default function App() {
 
             </div>
           ) : (
-            /* JIKA PENGAJAR / KEPALA TPQ: TAMPILAN TERPADU */
             <div>
+              {/* ADMIN: User Management Tab */}
+              {activeTab === 'kelola_akun' && currentUser.role === 'admin' && (
+                <AdminUserManager currentUser={currentUser} />
+              )}
+
+              {/* All staff (admin, kepala, pengajar): Data tabs */}
               {activeTab === 'catatan' && (
                 <SimpleCatatanTable
                   records={setoran}
@@ -310,7 +292,6 @@ export default function App() {
         </main>
       </div>
 
-      {/* Footer Sederhana */}
       <footer className="no-print border-t border-stone-200 bg-white py-4 text-center text-xs text-stone-500">
         <p className="font-semibold text-stone-800">{profile.name}</p>
         <p className="text-[11px] text-stone-400 mt-0.5">
@@ -318,7 +299,6 @@ export default function App() {
         </p>
       </footer>
 
-      {/* Modal Input Terpadu (Tambah & Edit) */}
       <SimpleInputModal
         isOpen={isInputModalOpen}
         onClose={() => {
@@ -332,7 +312,6 @@ export default function App() {
         onUpdate={handleUpdateSetoran}
       />
 
-      {/* Toast Notifikasi Sukses */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl border border-stone-800 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
