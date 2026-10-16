@@ -142,7 +142,7 @@ CREATE POLICY "Public access for setoran_records" ON setoran_records FOR ALL TO 
 INSERT INTO tpq_profile (id, name, address, phone, kepala_name, sk_kemenag)
 VALUES (
   'main-tpq-profile',
-  'TPQ AQurrata Ayun',
+  'TPQ Qurrata Ayun',
   'Sidotopo II no 37, Simokerto, Surabaya, Jawa Timur, Indonesia',
   '0812-9988-7766',
   'Ustadzah Wahyu',

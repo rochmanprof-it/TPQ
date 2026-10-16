@@ -41,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-3 shrink-0">
             <div className="w-10 h-10 rounded-lg overflow-hidden bg-emerald-800 flex items-center justify-center border border-emerald-700/40 shadow-xs">
               <img
-                src="/src/assets/images/tpq_emblem_logo_1791968423601.jpg"
+                src="/images/tpq_logo.jpg"
                 alt="Logo TPQ"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"

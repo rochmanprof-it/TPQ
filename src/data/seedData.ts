@@ -175,24 +175,9 @@ export const INITIAL_STUDENTS: Student[] = [
 export const INITIAL_ATTENDANCE: AttendanceRecord[] = [
   // Today's attendance
   { id: "att-101", studentId: "santri-001", studentName: "Zaid Abdullah", date: "2026-10-13", status: "hadir", note: "Datang tepat waktu & ceria", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791880000000 },
-  { id: "att-102", studentId: "santri-002", studentName: "Aisyah Humaira", date: "2026-10-13", status: "hadir", note: "Membawa Al-Qur'an dan juz 'amma", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791880100000 },
-  { id: "att-103", studentId: "santri-003", studentName: "Bilal Al-Ghifari", date: "2026-10-13", status: "izin", note: "Acara keluarga di luar kota (wali sudah konfirmasi)", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791880200000 },
-  { id: "att-104", studentId: "santri-004", studentName: "Maryam Azzahra", date: "2026-10-13", status: "hadir", note: "Aktif membantu menyimak teman", recordedBy: "Ustadzah Fatimah Azzahra", timestamp: 1791880300000 },
-  { id: "att-105", studentId: "santri-005", studentName: "Umar Al-Faruq", date: "2026-10-13", status: "hadir", note: "Fokus belajar huruf hijaiyyah", recordedBy: "Ustadzah Fatimah Azzahra", timestamp: 1791880400000 },
-  { id: "att-106", studentId: "santri-006", studentName: "Khadijah An-Nur", date: "2026-10-13", status: "hadir", note: "Semangat latihan waqaf", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791880500000 },
 
   // Previous days
   { id: "att-201", studentId: "santri-001", studentName: "Zaid Abdullah", date: "2026-10-12", status: "hadir", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791793600000 },
-  { id: "att-202", studentId: "santri-002", studentName: "Aisyah Humaira", date: "2026-10-12", status: "hadir", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791793700000 },
-  { id: "att-203", studentId: "santri-003", studentName: "Bilal Al-Ghifari", date: "2026-10-12", status: "hadir", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791793800000 },
-  { id: "att-204", studentId: "santri-004", studentName: "Maryam Azzahra", date: "2026-10-12", status: "hadir", recordedBy: "Ustadzah Fatimah Azzahra", timestamp: 1791793900000 },
-  { id: "att-205", studentId: "santri-005", studentName: "Umar Al-Faruq", date: "2026-10-12", status: "sakit", note: "Demam, surat dokter via WA", recordedBy: "Ustadzah Fatimah Azzahra", timestamp: 1791794000000 },
-  { id: "att-206", studentId: "santri-006", studentName: "Khadijah An-Nur", date: "2026-10-12", status: "hadir", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791794100000 },
-
-  { id: "att-301", studentId: "santri-001", studentName: "Zaid Abdullah", date: "2026-10-10", status: "hadir", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791620000000 },
-  { id: "att-302", studentId: "santri-002", studentName: "Aisyah Humaira", date: "2026-10-10", status: "hadir", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791620100000 },
-  { id: "att-303", studentId: "santri-003", studentName: "Bilal Al-Ghifari", date: "2026-10-10", status: "hadir", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791620200000 },
-  { id: "att-304", studentId: "santri-004", studentName: "Maryam Azzahra", date: "2026-10-10", status: "hadir", recordedBy: "Ustadzah Fatimah Azzahra", timestamp: 1791620300000 },
   { id: "att-305", studentId: "santri-005", studentName: "Umar Al-Faruq", date: "2026-10-10", status: "hadir", recordedBy: "Ustadzah Fatimah Azzahra", timestamp: 1791620400000 },
   { id: "att-306", studentId: "santri-006", studentName: "Khadijah An-Nur", date: "2026-10-10", status: "hadir", recordedBy: "Ustadz Ahmad Fauzi, S.Pd.I", timestamp: 1791620500000 }
 ];
