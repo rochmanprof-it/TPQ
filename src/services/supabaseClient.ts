@@ -1,21 +1,36 @@
+
 import { createClient } from '@supabase/supabase-js';
 
-const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Read Supabase configuration from Vite environment variables.
+const rawUrl = import.meta.env.VITE_SUPABASE_URL?.trim() || '';
+const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() || '';
 
-export const isSupabaseConfigured = Boolean(
-  rawUrl &&
-  rawKey &&
-  rawUrl.trim() !== '' &&
-  rawKey.trim() !== '' &&
+// Validate configuration before creating the client.
+const hasValidUrl =
+  rawUrl.startsWith('https://') &&
+  rawUrl.endsWith('.supabase.co') &&
   !rawUrl.includes('your-project-id') &&
-  !rawUrl.includes('your-project.supabase.co')
-);
+  !rawUrl.includes('your-project.supabase.co');
+
+const hasValidKey =
+  rawKey.length > 0 &&
+  rawKey !== 'your-anon-key' &&
+  rawKey !== 'your-publishable-key';
+
+export const isSupabaseConfigured = hasValidUrl && hasValidKey;
 
 export const supabaseUrl = rawUrl;
 export const supabaseAnonKey = rawKey;
 
-// Safe fallback client to prevent app crash if Supabase credentials are not yet configured
+// Create a real client only when configuration is available.
+// Otherwise, fail clearly instead of pretending database operations succeeded.
+if (!isSupabaseConfigured) {
+  console.error(
+    '[Supabase] Configuration is missing or invalid. ' +
+    'Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
+  );
+}
+
 export const supabase = isSupabaseConfigured
   ? createClient(rawUrl, rawKey, {
       auth: {
@@ -24,24 +39,4 @@ export const supabase = isSupabaseConfigured
         detectSessionInUrl: true,
       },
     })
-  : ({
-      auth: {
-        getSession: async () => ({ data: { session: null }, error: null }),
-        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-        signInWithPassword: async () => ({ data: { user: null }, error: new Error('Supabase belum dikonfigurasi') }),
-        signOut: async () => {},
-        getUser: async () => ({ data: { user: null }, error: null }),
-      },
-      from: () => ({
-        select: () => ({
-          eq: () => ({
-            maybeSingle: async () => ({ data: null, error: null }),
-            order: () => Promise.resolve({ data: [], error: null }),
-          }),
-          order: () => Promise.resolve({ data: [], error: null }),
-        }),
-        insert: async () => ({ error: null }),
-        update: () => ({ eq: async () => ({ error: null }) }),
-        delete: () => ({ eq: async () => ({ error: null }) }),
-      }),
-    } as unknown as ReturnType<typeof createClient>);
+  : null;
