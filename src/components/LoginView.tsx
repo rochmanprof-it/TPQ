@@ -76,7 +76,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
             Sistem Informasi TPQ
           </h1>
           <p className="text-xs text-emerald-200/90 mt-1 max-w-xs mx-auto">
-            TPQ Al-Ikhlas Nurul Iman · Pencatatan Mengaji, Hafalan & Raport Santri
+            TPQ Qurrota A'yun · Pencatatan Mengaji, Hafalan & Raport Santri
           </p>
         </div>
 
@@ -171,15 +171,13 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                 </p>
               </div>
             </div>
-            <div className="text-[10px] text-stone-400 text-center font-mono">
-              Akun Administrator: <span className="text-stone-700 font-semibold">admin</span> · Sandi: <span className="text-stone-700 font-semibold">admin123456</span>
-            </div>
+            
           </div>
         </div>
 
         {/* Footer */}
         <div className="px-6 py-3.5 bg-stone-50 border-t border-stone-200/80 text-center text-[11px] text-stone-500">
-          <p>TPQ Al-Ikhlas Nurul Iman · Sistem Informasi Manajemen Santri</p>
+          <p>TPQ Qurrota A'yun · Sistem Informasi Manajemen Santri</p>
         </div>
       </div>
     </div>

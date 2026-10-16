@@ -58,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <span className="text-base sm:text-lg font-bold tracking-tight text-stone-900 block leading-tight whitespace-nowrap">
-                TPQ Al-Ikhlas
+                TPQ Qurrota A'yun
               </span>
               <span className="text-xs text-stone-500 hidden sm:block whitespace-nowrap">
                 Pelaporan Ngaji & Tahfidz Digital

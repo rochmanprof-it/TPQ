@@ -67,7 +67,7 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-bold text-stone-900 tracking-tight">
-                  Laporan Mengaji TPQ Al-Ikhlas
+                  Laporan Mengaji TPQ Qurrota A'yun
                 </h1>
                 <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border ${roleBadge.bg} flex items-center gap-1`}>
                   {roleBadge.icon}
@@ -134,7 +134,7 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({
           <div className="text-xs text-stone-600 font-medium flex items-center gap-1.5 mt-3 pt-3 border-t border-stone-100">
             <span>Halaman Buku Mengaji Ananda:</span>
             <strong className="text-emerald-800 text-sm">{currentUser.studentName}</strong>
-            <span className="text-stone-400">· (Data santri lain disembunyikan untuk privasi)</span>
+            <span className="text-stone-400">· </span>
           </div>
         )}
       </div>
