@@ -1,6 +1,7 @@
 import { User, Student, AttendanceRecord, SetoranRecord, TPQProfile, StudentHafalanProgress } from '../types';
 import { INITIAL_USERS, INITIAL_STUDENTS, INITIAL_ATTENDANCE, INITIAL_SETORAN, TPQ_INFO } from '../data/seedData';
 import { JUZ_30_SURAHS } from '../data/quranData';
+import { supabaseService } from './supabaseService';
 
 const STORAGE_KEYS = {
   USERS: 'tpq_users_v1',
@@ -83,11 +84,17 @@ export const storage = {
     if (active && active.id === user.id) {
       this.setActiveUser(user);
     }
+
+    // Push to Supabase if connected
+    supabaseService.upsertUser(user);
   },
 
   deleteUser(id: string): void {
     const users = this.getUsers().filter(u => u.id !== id);
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+    // Delete in Supabase if connected
+    supabaseService.deleteUser(id);
   },
 
   getActiveUser(): User | null {
@@ -121,6 +128,11 @@ export const storage = {
     } catch {
       return TPQ_INFO;
     }
+  },
+
+  saveProfile(profile: TPQProfile): void {
+    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+    supabaseService.upsertProfile(profile);
   },
 
   getStudents(): Student[] {
@@ -165,18 +177,24 @@ export const storage = {
       students.unshift(student);
     }
     localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+
+    // Push to Supabase if connected
+    supabaseService.upsertStudent(student);
   },
 
   deleteStudent(id: string): void {
     const students = this.getStudents().filter(s => s.id !== id);
     localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
 
-    // Also remove their setoran and attendance records
-    const setoranList = this.getSetoran().filter(r => r.studentId !== id);
-    localStorage.setItem(STORAGE_KEYS.SETORAN, JSON.stringify(setoranList));
+    // Cascade delete local setoran & attendance for this student
+    const setoran = this.getSetoran().filter(s => s.studentId !== id);
+    localStorage.setItem(STORAGE_KEYS.SETORAN, JSON.stringify(setoran));
 
-    const attendanceList = this.getAttendance().filter(a => a.studentId !== id);
-    localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(attendanceList));
+    const attendance = this.getAttendance().filter(a => a.studentId !== id);
+    localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(attendance));
+
+    // Delete in Supabase
+    supabaseService.deleteStudent(id);
   },
 
   updateStudentHafalan(
@@ -190,10 +208,6 @@ export const storage = {
     const students = this.getStudents();
     const student = students.find(s => s.id === studentId);
     if (!student) return;
-
-    if (!student.hafalanList || student.hafalanList.length === 0) {
-      student.hafalanList = createDefaultHafalanList();
-    }
 
     let hafalanItem = student.hafalanList.find(h => h.surahNumber === surahNumber);
     if (!hafalanItem) {
@@ -214,6 +228,7 @@ export const storage = {
     hafalanItem.completedDate = status === 'hafal_lancar' || status === 'mutqin' ? (completedDate || new Date().toISOString().slice(0, 10)) : undefined;
     
     localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+    supabaseService.upsertStudent(student);
   },
 
   getAttendance(): AttendanceRecord[] {
@@ -231,7 +246,6 @@ export const storage = {
 
   saveAttendanceBatch(records: AttendanceRecord[]): void {
     const current = this.getAttendance();
-    // Replace if same student and date already exists, else append
     const updated = [...current];
     records.forEach(newRec => {
       const existingIdx = updated.findIndex(r => r.studentId === newRec.studentId && r.date === newRec.date);
@@ -240,6 +254,8 @@ export const storage = {
       } else {
         updated.unshift(newRec);
       }
+      // Sync to Supabase
+      supabaseService.upsertAttendance(newRec);
     });
     localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(updated));
   },
@@ -294,7 +310,6 @@ export const storage = {
       if (data.type === 'iqro' || data.type === 'tadarus_quran') {
         student.currentLevel = `${data.materi} (${data.halamanAyat})`;
       } else if (data.type === 'hafalan_surat' && (data.kelancaran === 'mumtaz' || data.kelancaran === 'jayyid_jiddan')) {
-        // Find surah in hafalanList
         const cleanSurahName = data.materi.replace(/^Surat\s+/i, '').trim();
         const hafalanItem = student.hafalanList.find(h => h.surahName.toLowerCase() === cleanSurahName.toLowerCase());
         if (hafalanItem) {
@@ -307,6 +322,9 @@ export const storage = {
       this.saveStudent(student);
     }
 
+    // Push setoran to Supabase
+    supabaseService.upsertSetoran(newRecord);
+
     return newRecord;
   },
 
@@ -317,7 +335,6 @@ export const storage = {
       list[index] = updated;
       localStorage.setItem(STORAGE_KEYS.SETORAN, JSON.stringify(list));
 
-      // Also sync attendance record if attendanceStatus provided
       if (updated.attendanceStatus) {
         this.saveAttendanceBatch([{
           id: `att-${Date.now()}-${updated.studentId}`,
@@ -331,7 +348,6 @@ export const storage = {
         }]);
       }
 
-      // Also update student current level if applicable
       const students = this.getStudents();
       const student = students.find(s => s.id === updated.studentId);
       if (student) {
@@ -340,6 +356,9 @@ export const storage = {
         }
         this.saveStudent(student);
       }
+
+      // Sync updated record to Supabase
+      supabaseService.upsertSetoran(updated);
     }
   },
 
@@ -365,12 +384,60 @@ export const storage = {
       doaItem.completedDate = status === 'hafal_lancar' || status === 'mutqin' ? (completedDate || new Date().toISOString().slice(0, 10)) : undefined;
     }
     localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+    supabaseService.upsertStudent(student);
   },
 
   deleteSetoran(id: string): void {
     const current = this.getSetoran();
     const filtered = current.filter(r => r.id !== id);
     localStorage.setItem(STORAGE_KEYS.SETORAN, JSON.stringify(filtered));
+
+    // Delete in Supabase
+    supabaseService.deleteSetoran(id);
+  },
+
+  /**
+   * Mengambil data terbaru dari Supabase ke penyimpanan lokal jika Supabase dikonfigurasi.
+   */
+  async initSupabaseSync(): Promise<boolean> {
+    if (!supabaseService.isConfigured()) return false;
+    try {
+      const [remoteUsers, remoteStudents, remoteSetoran, remoteAttendance, remoteProfile] = await Promise.all([
+        supabaseService.fetchUsers(),
+        supabaseService.fetchStudents(),
+        supabaseService.fetchSetoran(),
+        supabaseService.fetchAttendance(),
+        supabaseService.fetchProfile(),
+      ]);
+
+      let updated = false;
+
+      if (remoteUsers && remoteUsers.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(remoteUsers));
+        updated = true;
+      }
+      if (remoteStudents && remoteStudents.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(remoteStudents));
+        updated = true;
+      }
+      if (remoteSetoran && remoteSetoran.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.SETORAN, JSON.stringify(remoteSetoran));
+        updated = true;
+      }
+      if (remoteAttendance && remoteAttendance.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(remoteAttendance));
+        updated = true;
+      }
+      if (remoteProfile) {
+        localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(remoteProfile));
+        updated = true;
+      }
+
+      return updated;
+    } catch (err) {
+      console.warn('Supabase sync notice:', err);
+      return false;
+    }
   },
 
   resetAllToDefault(): void {

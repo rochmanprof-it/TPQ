@@ -36,6 +36,16 @@ export default function App() {
     setStudents(loadedStudents);
     setAttendance(loadedAttendance);
     setSetoran(loadedSetoran);
+
+    // Asynchronously sync from Supabase if configured
+    storage.initSupabaseSync().then((updated) => {
+      if (updated) {
+        setStudents([...storage.getStudents()]);
+        setAttendance([...storage.getAttendance()]);
+        setSetoran([...storage.getSetoran()]);
+        setProfile(storage.getProfile());
+      }
+    });
   }, []);
 
   useEffect(() => {

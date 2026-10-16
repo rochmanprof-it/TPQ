@@ -1,11 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Safe fallback client to prevent app crash if Supabase credentials are not configured
-export const supabase = (supabaseUrl && supabaseAnonKey)
-  ? createClient(supabaseUrl, supabaseAnonKey, {
+export const isSupabaseConfigured = Boolean(
+  rawUrl &&
+  rawKey &&
+  rawUrl.trim() !== '' &&
+  rawKey.trim() !== '' &&
+  !rawUrl.includes('your-project-id') &&
+  !rawUrl.includes('your-project.supabase.co')
+);
+
+export const supabaseUrl = rawUrl;
+export const supabaseAnonKey = rawKey;
+
+// Safe fallback client to prevent app crash if Supabase credentials are not yet configured
+export const supabase = isSupabaseConfigured
+  ? createClient(rawUrl, rawKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -16,7 +28,7 @@ export const supabase = (supabaseUrl && supabaseAnonKey)
       auth: {
         getSession: async () => ({ data: { session: null }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-        signInWithPassword: async () => ({ data: { user: null }, error: new Error('Supabase not configured') }),
+        signInWithPassword: async () => ({ data: { user: null }, error: new Error('Supabase belum dikonfigurasi') }),
         signOut: async () => {},
         getUser: async () => ({ data: { user: null }, error: null }),
       },
