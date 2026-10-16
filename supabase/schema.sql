@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS tpq_users (
   title text,
   email text UNIQUE NOT NULL,
   phone text DEFAULT '-',
-  password text NOT NULL DEFAULT '123456',
+  password text NOT NULL DEFAULT 'R@hasia123',
   student_id text,
   student_name text,
   avatar text,
@@ -142,10 +142,10 @@ CREATE POLICY "Public access for setoran_records" ON setoran_records FOR ALL TO 
 INSERT INTO tpq_profile (id, name, address, phone, kepala_name, sk_kemenag)
 VALUES (
   'main-tpq-profile',
-  'TPQ Al-Ikhlas Nurul Iman',
-  'Jl. Masjid Baiturrahman No. 12, Kota Damai',
+  'TPQ AQurrata Ayun',
+  'Sidotopo II no 37, Simokerto, Surabaya, Jawa Timur, Indonesia',
   '0812-9988-7766',
-  'Ustadz H. Mansur Al-Hafidz, M.Ag',
+  'Ustadzah Wahyu',
   'KD.11.02/5/PP.00.7/1042/2021'
 )
 ON CONFLICT (id) DO UPDATE SET
@@ -164,37 +164,28 @@ VALUES
     'Administrator TPQ',
     'admin',
     'Pengelola Sistem & Akun TPQ',
-    'admin@tpq-alikhlas.sch.id',
+    'admin@gmail.com',
     '0811-9988-0001',
-    'admin123456'
+    'R@hasia123'
   ),
   (
     'user-kepala-1',
     'kepala.tpq',
-    'Ustadz H. Mansur Al-Hafidz, M.Ag',
+    'Ustadzah Wahyu',
     'kepala',
     'Kepala Lembaga TPQ',
-    'mansur.tpq@tpq-alikhlas.sch.id',
+    'wahyu.tpq@gmail.com',
     '0811-2233-4455',
     'kepala123456'
   ),
-  (
-    'user-ustadz-1',
-    'ustadz.ahmad',
-    'Ustadz Ahmad Fauzi, S.Pd.I',
-    'pengajar',
-    'Guru Halaqah Tilawah & Tahfidz',
-    'ahmad.fauzi@tpq-alikhlas.sch.id',
-    '0812-3344-5566',
-    'ustadz123456'
-  ),
+  
   (
     'user-ustadzah-2',
-    'ustadzah.fatimah',
-    'Ustadzah Fatimah Azzahra',
+    'ustadzah.indria',
+    'Ustadzah Eli Indria',
     'pengajar',
     'Guru Halaqah Iqro Dasar',
-    'fatimah@tpq-alikhlas.sch.id',
+    'indria@gmail.com',
     '0813-7788-9900',
     '123456'
   )

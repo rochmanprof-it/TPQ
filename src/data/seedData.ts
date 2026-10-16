@@ -23,7 +23,7 @@ export const INITIAL_USERS: User[] = [
   
   {
     id: "user-ustadzah-1",
-    username: "ustadzah.eli",
+    username: "ustadzah.indria",
     name: "Ustadzah Eli Indria",
     role: "pengajar",
     title: "Guru Halaqah Iqro Dasar",

@@ -1,4 +1,9 @@
-import { createClient } from "npm:@supabase/supabase-js@2.45.4";
+import { createClient } from "@supabase/supabase-js";
+
+declare const Deno: {
+  env: { get(name: string): string | undefined };
+  serve(handler: (req: Request) => Response | Promise<Response>): void;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -232,7 +237,7 @@ Deno.serve(async (req: Request) => {
     );
   } catch (err) {
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: err instanceof Error ? err.message : String(err) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
