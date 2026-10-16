@@ -43,6 +43,24 @@ export const storage = {
       }
     }
 
+    // Ensure all stored users have a valid password property
+    let hasUpdatedPasswords = false;
+    list = list.map(u => {
+      if (!u.password) {
+        hasUpdatedPasswords = true;
+        const defaultPass = u.role === 'admin' ? 'admin123456'
+          : u.role === 'kepala' ? 'kepala123456'
+          : u.role === 'pengajar' ? 'ustadz123456'
+          : 'wali123456';
+        return { ...u, password: defaultPass };
+      }
+      return u;
+    });
+
+    if (hasUpdatedPasswords) {
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(list));
+    }
+
     return list;
   },
 
