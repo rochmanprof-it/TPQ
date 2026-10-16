@@ -2,7 +2,7 @@ import { User, Student, AttendanceRecord, SetoranRecord, TPQProfile } from '../t
 import { JUZ_30_SURAHS, DOA_LIST_DATA } from './quranData';
 
 export const TPQ_INFO: TPQProfile = {
-  name: "TPQ Qurratu A'yun",
+  name: "TPQ Qurrata A'yun",
   address: "Sidoyoso II no. 37, Simokerto, Surabaya, Jawa Timur",
   phone: "0852-3110-1093",
   kepalaName: "Ustadzah Wahyu",
