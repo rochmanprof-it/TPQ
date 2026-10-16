@@ -31,11 +31,11 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({
 
   // Admin sees all tabs including user management
   const adminTabs = [
-    { key: 'kelola_akun', label: 'Kelola Akun Pengguna' },
-    { key: 'catatan', label: 'Buku Catatan Ngaji & Absensi' },
-    { key: 'santri', label: 'Kelola Santri' },
-    { key: 'hafalan', label: 'Progres Hafalan (Juz 30)' },
-    { key: 'raport', label: 'Cetak Raport Santri' },
+    { key: 'kelola_akun', label: '👑 Kelola Akun Pengguna' },
+    { key: 'catatan', label: '📋 Buku Catatan Ngaji & Absensi' },
+    { key: 'santri', label: '👥 Kelola Santri' },
+    { key: 'hafalan', label: '📖 Progres Hafalan Surat (Juz 30)' },
+    { key: 'raport', label: '🖨️ Cetak Raport Santri' },
   ];
 
   // Kepala & Pengajar see all data tabs (no user management)

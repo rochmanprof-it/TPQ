@@ -17,7 +17,7 @@ export const SimpleSantriManager: React.FC<SimpleSantriManagerProps> = ({
   onDeleteStudent,
   onOpenRaport
 }) => {
-  const canWrite = currentUser.role === 'pengajar' || currentUser.role === 'kepala';
+  const canWrite = currentUser.role === 'pengajar' || currentUser.role === 'kepala' || currentUser.role === 'admin';
   const [searchTerm, setSearchTerm] = useState('');
   
   // Modal state

@@ -1,5 +1,5 @@
 import React from 'react';
-import { User } from '../types';
+import { User, UserRole } from '../types';
 import { BookOpen, UserCheck, Shield, Users, LogOut, ArrowLeftRight } from 'lucide-react';
 
 interface NavbarProps {
@@ -18,17 +18,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const isWali = currentUser.role === 'wali_murid';
 
-  const roleLabel = {
+  const roleLabel = ({
+    admin: 'Administrator',
     pengajar: 'Ustadz / Pengajar',
     kepala: 'Kepala TPQ',
     wali_murid: 'Wali Murid'
-  }[currentUser.role];
+  } as Record<UserRole, string>)[currentUser.role];
 
-  const roleBadgeStyle = {
+  const roleBadgeStyle = ({
+    admin: 'bg-rose-50 text-rose-800 border-rose-200',
     pengajar: 'bg-emerald-50 text-emerald-800 border-emerald-200',
     kepala: 'bg-amber-50 text-amber-800 border-amber-200',
     wali_murid: 'bg-sky-50 text-sky-800 border-sky-200'
-  }[currentUser.role];
+  } as Record<UserRole, string>)[currentUser.role];
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-stone-200 no-print">

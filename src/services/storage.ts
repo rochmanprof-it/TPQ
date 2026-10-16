@@ -25,15 +25,51 @@ function createDefaultHafalanList(): StudentHafalanProgress[] {
 export const storage = {
   getUsers(): User[] {
     const raw = localStorage.getItem(STORAGE_KEYS.USERS);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(INITIAL_USERS));
-      return INITIAL_USERS;
+    let list: User[] = INITIAL_USERS;
+    if (raw) {
+      try {
+        list = JSON.parse(raw);
+      } catch {
+        list = INITIAL_USERS;
+      }
     }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return INITIAL_USERS;
+
+    // Ensure the default admin exists in the list if missing
+    if (!list.some(u => u.role === 'admin')) {
+      const adminDefault = INITIAL_USERS.find(u => u.role === 'admin');
+      if (adminDefault) {
+        list.unshift(adminDefault);
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(list));
+      }
     }
+
+    return list;
+  },
+
+  getUserById(id: string): User | undefined {
+    return this.getUsers().find(u => u.id === id);
+  },
+
+  saveUser(user: User): void {
+    const users = this.getUsers();
+    const index = users.findIndex(u => u.id === user.id);
+    if (index >= 0) {
+      users[index] = user;
+    } else {
+      users.unshift(user);
+    }
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+    // Keep active user updated if currently logged in
+    const active = this.getActiveUser();
+    if (active && active.id === user.id) {
+      this.setActiveUser(user);
+    }
+  },
+
+  deleteUser(id: string): void {
+    const users = this.getUsers().filter(u => u.id !== id);
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
   },
 
   getActiveUser(): User | null {

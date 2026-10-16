@@ -27,7 +27,7 @@ export const SimpleHafalanView: React.FC<SimpleHafalanViewProps> = ({
   onUpdateHafalan,
   onUpdateDoa
 }) => {
-  const canWrite = currentUser.role === 'pengajar' || currentUser.role === 'kepala';
+  const canWrite = currentUser.role === 'pengajar' || currentUser.role === 'kepala' || currentUser.role === 'admin';
   const isWali = currentUser.role === 'wali_murid';
 
   const [activeSubTab, setActiveSubTab] = useState<'surat' | 'doa'>('surat');

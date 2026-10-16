@@ -11,6 +11,16 @@ export const TPQ_INFO: TPQProfile = {
 
 export const INITIAL_USERS: User[] = [
   {
+    id: "user-admin-1",
+    username: "admin.tpq",
+    name: "Administrator TPQ",
+    role: "admin",
+    title: "Pengelola Sistem & Akun TPQ",
+    email: "admin@tpq-alikhlas.sch.id",
+    phone: "0811-9988-0001",
+    password: "admin123456"
+  },
+  {
     id: "user-ustadz-1",
     username: "ustadz.ahmad",
     name: "Ustadz Ahmad Fauzi, S.Pd.I",
@@ -18,6 +28,7 @@ export const INITIAL_USERS: User[] = [
     title: "Guru Halaqah Tilawah & Tahfidz",
     email: "ahmad.fauzi@tpq-alikhlas.sch.id",
     phone: "0812-3344-5566",
+    password: "ustadz123456",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
   },
   {
@@ -27,7 +38,8 @@ export const INITIAL_USERS: User[] = [
     role: "pengajar",
     title: "Guru Halaqah Iqro Dasar",
     email: "fatimah@tpq-alikhlas.sch.id",
-    phone: "0813-7788-9900"
+    phone: "0813-7788-9900",
+    password: "123456"
   },
   {
     id: "user-kepala-1",
@@ -36,7 +48,8 @@ export const INITIAL_USERS: User[] = [
     role: "kepala",
     title: "Kepala Lembaga TPQ",
     email: "mansur.tpq@tpq-alikhlas.sch.id",
-    phone: "0811-2233-4455"
+    phone: "0811-2233-4455",
+    password: "kepala123456"
   },
   {
     id: "user-wali-1",
@@ -47,7 +60,8 @@ export const INITIAL_USERS: User[] = [
     email: "hendra.w@gmail.com",
     phone: "0812-3456-7890",
     studentId: "santri-001",
-    studentName: "Zaid Abdullah"
+    studentName: "Zaid Abdullah",
+    password: "wali123456"
   },
   {
     id: "user-wali-2",
@@ -58,7 +72,8 @@ export const INITIAL_USERS: User[] = [
     email: "ratnasari@gmail.com",
     phone: "0813-8877-6655",
     studentId: "santri-002",
-    studentName: "Aisyah Humaira"
+    studentName: "Aisyah Humaira",
+    password: "wali123456"
   },
   {
     id: "user-wali-3",
@@ -69,7 +84,8 @@ export const INITIAL_USERS: User[] = [
     email: "dedi.pratama@gmail.com",
     phone: "0857-1122-3344",
     studentId: "santri-003",
-    studentName: "Bilal Al-Ghifari"
+    studentName: "Bilal Al-Ghifari",
+    password: "wali123456"
   }
 ];
 

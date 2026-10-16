@@ -11,6 +11,7 @@ export interface User {
   studentId?: string; // If role === 'wali_murid', ID of their child
   studentName?: string;
   avatar?: string;
+  password?: string;
 }
 
 export type AttendanceStatus = 'hadir' | 'izin' | 'sakit' | 'alpa';

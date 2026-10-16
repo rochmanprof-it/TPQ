@@ -18,7 +18,7 @@ export const LoginView: React.FC = () => {
     setError('');
 
     if (!email.trim()) {
-      setError('Email harus diisi.');
+      setError('Email atau username harus diisi.');
       return;
     }
     if (!password) {
@@ -85,17 +85,17 @@ export const LoginView: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                Email
+                Email atau Username
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <input
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@tpq-alikhlas.sch.id"
+                  placeholder="email@tpq-alikhlas.sch.id atau username"
                   className="w-full text-xs rounded-xl border border-stone-300 pl-9 pr-3 py-2.5 bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700"
-                  autoComplete="email"
+                  autoComplete="username"
                   autoFocus
                 />
               </div>

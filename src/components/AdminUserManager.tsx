@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, UserRole } from '../types';
 import { userAdminApi, CreateUserPayload, UpdateUserPayload } from '../services/userAdminApi';
-import { supabase } from '../services/supabaseClient';
 import {
   ShieldCheck, GraduationCap, HeartHandshake, Crown, X, Plus, Trash2, Edit2,
   AlertCircle, CheckCircle2, Loader2, Search, Lock, Mail, Phone, User as UserIcon
