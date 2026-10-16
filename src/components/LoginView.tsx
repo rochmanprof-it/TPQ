@@ -65,7 +65,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
 
           <div className="w-16 h-16 rounded-2xl mx-auto mb-3.5 bg-emerald-800 p-1 border-2 border-emerald-600/60 shadow-lg overflow-hidden flex items-center justify-center">
             <img
-              src="/images/tpq_logo.jpg"
+              src="favicon.jpg"
               alt="Logo TPQ"
               className="w-full h-full object-cover rounded-xl"
               referrerPolicy="no-referrer"

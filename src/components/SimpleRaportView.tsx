@@ -86,7 +86,7 @@ export const SimpleRaportView: React.FC<SimpleRaportViewProps> = ({
           <div className="flex items-center justify-center gap-4">
             <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border border-emerald-800">
               <img
-                src="/images/tpq_logo.jpg"
+                src="favicon.jpg"
                 alt="Logo TPQ"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
