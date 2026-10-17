@@ -1,6 +1,6 @@
-import { User, Student, AttendanceRecord, SetoranRecord, TPQProfile, StudentHafalanProgress } from '../types';
+import { User, Student, AttendanceRecord, SetoranRecord, TPQProfile, StudentHafalanProgress, StudentDoaProgress } from '../types';
 import { INITIAL_USERS, INITIAL_STUDENTS, INITIAL_ATTENDANCE, INITIAL_SETORAN, TPQ_INFO } from '../data/seedData';
-import { JUZ_30_SURAHS } from '../data/quranData';
+import { JUZ_30_SURAHS, DOA_LIST_DATA } from '../data/quranData';
 import { supabaseService } from './supabaseService';
 
 const STORAGE_KEYS = {
@@ -19,6 +19,15 @@ function createDefaultHafalanList(): StudentHafalanProgress[] {
     surahName: s.name,
     surahArabic: s.nameArabic,
     totalAyat: s.totalAyat,
+    status: 'belum'
+  }));
+}
+
+function createDefaultDoaList(): StudentDoaProgress[] {
+  return DOA_LIST_DATA.map(d => ({
+    id: d.id,
+    doaName: d.name,
+    doaArabic: d.arabic,
     status: 'belum'
   }));
 }
@@ -137,15 +146,67 @@ export const storage = {
 
   getStudents(): Student[] {
     const raw = localStorage.getItem(STORAGE_KEYS.STUDENTS);
+    let list: Student[];
     if (!raw) {
+      list = INITIAL_STUDENTS;
       localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(INITIAL_STUDENTS));
-      return INITIAL_STUDENTS;
+    } else {
+      try {
+        list = JSON.parse(raw);
+        if (!Array.isArray(list) || list.length === 0) {
+          list = INITIAL_STUDENTS;
+        }
+      } catch {
+        list = INITIAL_STUDENTS;
+      }
     }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return INITIAL_STUDENTS;
+
+    // Ensure every student has a valid hafalanList with all Juz 30 surahs initialized
+    let modified = false;
+    list = list.map(student => {
+      let hafalanList = Array.isArray(student.hafalanList) ? [...student.hafalanList] : [];
+      if (hafalanList.length === 0) {
+        hafalanList = createDefaultHafalanList();
+        modified = true;
+      } else {
+        // Ensure all 37 surahs exist and surahNumber is typed as number
+        const existingNumbers = new Set(hafalanList.map(h => Number(h.surahNumber)));
+        const reversedSurahs = [...JUZ_30_SURAHS].reverse();
+        for (const s of reversedSurahs) {
+          if (!existingNumbers.has(s.number)) {
+            hafalanList.push({
+              surahNumber: s.number,
+              surahName: s.name,
+              surahArabic: s.nameArabic,
+              totalAyat: s.totalAyat,
+              status: 'belum'
+            });
+            modified = true;
+          }
+        }
+        // Normalize any string surahNumbers to number
+        hafalanList = hafalanList.map(h => ({
+          ...h,
+          surahNumber: Number(h.surahNumber)
+        }));
+      }
+
+      const doaList = Array.isArray(student.doaList) && student.doaList.length > 0
+        ? student.doaList
+        : createDefaultDoaList();
+
+      return {
+        ...student,
+        hafalanList,
+        doaList
+      };
+    });
+
+    if (modified) {
+      localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(list));
     }
+
+    return list;
   },
 
   getStudentById(id: string): Student | undefined {
@@ -158,6 +219,9 @@ export const storage = {
     // Ensure hafalanList is initialized
     if (!student.hafalanList || student.hafalanList.length === 0) {
       student.hafalanList = createDefaultHafalanList();
+    }
+    if (!student.doaList || student.doaList.length === 0) {
+      student.doaList = createDefaultDoaList();
     }
 
     const index = students.findIndex(s => s.id === student.id);
@@ -209,12 +273,17 @@ export const storage = {
     const student = students.find(s => s.id === studentId);
     if (!student) return;
 
-    let hafalanItem = student.hafalanList.find(h => h.surahNumber === surahNumber);
+    if (!Array.isArray(student.hafalanList)) {
+      student.hafalanList = createDefaultHafalanList();
+    }
+
+    const targetSurahNum = Number(surahNumber);
+    let hafalanItem = student.hafalanList.find(h => Number(h.surahNumber) === targetSurahNum);
     if (!hafalanItem) {
-      const surahMeta = JUZ_30_SURAHS.find(s => s.number === surahNumber);
+      const surahMeta = JUZ_30_SURAHS.find(s => s.number === targetSurahNum);
       hafalanItem = {
-        surahNumber,
-        surahName: surahMeta?.name || `Surah ${surahNumber}`,
+        surahNumber: targetSurahNum,
+        surahName: surahMeta?.name || `Surat ${targetSurahNum}`,
         surahArabic: surahMeta?.nameArabic || '',
         totalAyat: surahMeta?.totalAyat || 0,
         status: 'belum'
@@ -223,10 +292,49 @@ export const storage = {
     }
 
     hafalanItem.status = status;
-    hafalanItem.grade = grade;
-    hafalanItem.notes = notes;
-    hafalanItem.completedDate = status === 'hafal_lancar' || status === 'mutqin' ? (completedDate || new Date().toISOString().slice(0, 10)) : undefined;
+    hafalanItem.grade = grade || (status === 'hafal_lancar' || status === 'mutqin' ? 'mumtaz' : undefined);
+    hafalanItem.notes = notes || (status === 'hafal_lancar' ? 'Lulus hafalan lancar' : status === 'mutqin' ? 'Mutqin dan tartil' : undefined);
+    hafalanItem.completedDate = (status === 'hafal_lancar' || status === 'mutqin')
+      ? (completedDate || new Date().toISOString().slice(0, 10))
+      : undefined;
     
+    localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+    supabaseService.upsertStudent(student);
+  },
+
+  updateStudentDoa(
+    studentId: string,
+    doaId: string,
+    status: 'belum' | 'sedang_menghafal' | 'hafal_lancar' | 'mutqin',
+    notes?: string,
+    completedDate?: string
+  ): void {
+    const students = this.getStudents();
+    const student = students.find(s => s.id === studentId);
+    if (!student) return;
+
+    if (!Array.isArray(student.doaList)) {
+      student.doaList = createDefaultDoaList();
+    }
+
+    let doaItem = student.doaList.find(d => String(d.id) === String(doaId));
+    if (!doaItem) {
+      const doaMeta = DOA_LIST_DATA.find(d => d.id === doaId);
+      doaItem = {
+        id: doaId,
+        doaName: doaMeta?.name || 'Doa Harian',
+        doaArabic: doaMeta?.arabic || '',
+        status: 'belum'
+      };
+      student.doaList.push(doaItem);
+    }
+
+    doaItem.status = status;
+    doaItem.notes = notes || (status === 'hafal_lancar' ? 'Hafal lancar beserta artinya' : undefined);
+    doaItem.completedDate = (status === 'hafal_lancar' || status === 'mutqin')
+      ? (completedDate || new Date().toISOString().slice(0, 10))
+      : undefined;
+
     localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
     supabaseService.upsertStudent(student);
   },
@@ -360,31 +468,6 @@ export const storage = {
       // Sync updated record to Supabase
       supabaseService.upsertSetoran(updated);
     }
-  },
-
-  updateStudentDoa(
-    studentId: string,
-    doaId: string,
-    status: 'belum' | 'sedang_menghafal' | 'hafal_lancar' | 'mutqin',
-    notes?: string,
-    completedDate?: string
-  ): void {
-    const students = this.getStudents();
-    const student = students.find(s => s.id === studentId);
-    if (!student) return;
-
-    if (!student.doaList) {
-      student.doaList = [];
-    }
-
-    const doaItem = student.doaList.find(d => d.id === doaId);
-    if (doaItem) {
-      doaItem.status = status;
-      doaItem.notes = notes;
-      doaItem.completedDate = status === 'hafal_lancar' || status === 'mutqin' ? (completedDate || new Date().toISOString().slice(0, 10)) : undefined;
-    }
-    localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
-    supabaseService.upsertStudent(student);
   },
 
   deleteSetoran(id: string): void {

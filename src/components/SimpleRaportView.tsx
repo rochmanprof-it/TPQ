@@ -38,7 +38,7 @@ export const SimpleRaportView: React.FC<SimpleRaportViewProps> = ({
   const sakitCount = studentAttendance.filter(a => a.status === 'sakit').length;
   const presenceRate = totalMeetings > 0 ? Math.round((hadirCount / totalMeetings) * 100) : 100;
 
-  const completedHafalan = student.hafalanList.filter(
+  const completedHafalan = (student?.hafalanList || []).filter(
     h => h.status === 'hafal_lancar' || h.status === 'mutqin'
   );
 

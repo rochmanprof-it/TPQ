@@ -10,6 +10,7 @@ import { SimpleRaportView } from './components/SimpleRaportView';
 import { SimpleSantriManager } from './components/SimpleSantriManager';
 import { AdminUserManager } from './components/AdminUserManager';
 import { LoginView } from './components/LoginView';
+import { JUZ_30_SURAHS, DOA_LIST_DATA } from './data/quranData';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 
 export default function App() {
@@ -141,10 +142,46 @@ export default function App() {
     surahNumber: number,
     status: 'belum' | 'sedang_menghafal' | 'hafal_lancar' | 'mutqin',
     grade?: SetoranGrade,
-    notes?: string
+    notes?: string,
+    completedDate?: string
   ) => {
-    storage.updateStudentHafalan(studentId, surahNumber, status, grade, notes);
+    storage.updateStudentHafalan(studentId, surahNumber, status, grade, notes, completedDate);
     setStudents([...storage.getStudents()]);
+
+    const surahMeta = JUZ_30_SURAHS.find(s => s.number === Number(surahNumber));
+    const surahName = surahMeta ? `Surat ${surahMeta.name}` : `Surat ke-${surahNumber}`;
+    const student = storage.getStudentById(studentId);
+    const studentName = student ? student.name : 'Santri';
+
+    if (status === 'hafal_lancar' || status === 'mutqin') {
+      showToast(`Alhamdulillah! ${surahName} untuk ${studentName} berhasil ditandai LULUS HAFAL`);
+    } else if (status === 'sedang_menghafal') {
+      showToast(`${surahName} (${studentName}) ditandai sedang bimbingan hafalan`);
+    } else {
+      showToast(`Status hafalan ${surahName} (${studentName}) telah direset ke Belum Dihafal`);
+    }
+  };
+
+  const handleUpdateDoa = (
+    studentId: string,
+    doaId: string,
+    status: 'belum' | 'sedang_menghafal' | 'hafal_lancar' | 'mutqin',
+    notes?: string,
+    completedDate?: string
+  ) => {
+    storage.updateStudentDoa(studentId, doaId, status, notes, completedDate);
+    setStudents([...storage.getStudents()]);
+
+    const doaMeta = DOA_LIST_DATA.find(d => d.id === doaId);
+    const doaName = doaMeta ? doaMeta.name : 'Doa Harian';
+    const student = storage.getStudentById(studentId);
+    const studentName = student ? student.name : 'Santri';
+
+    if (status === 'hafal_lancar' || status === 'mutqin') {
+      showToast(`Alhamdulillah! ${doaName} untuk ${studentName} berhasil ditandai LULUS HAFAL`);
+    } else {
+      showToast(`Status ${doaName} (${studentName}) berhasil diperbarui`);
+    }
   };
 
   const handleSaveStudent = (student: Student) => {
@@ -219,7 +256,7 @@ export default function App() {
                   <div className="p-3 rounded-xl bg-stone-50 border border-stone-100">
                     <span className="text-stone-500 block">Daftar Surat Dihafal:</span>
                     <strong className="text-stone-900 text-sm block mt-0.5">
-                      {childStudent.hafalanList.filter(h => h.status === 'hafal_lancar' || h.status === 'mutqin').length} dari 37 Surat (Juz 30)
+                      {(childStudent.hafalanList || []).filter(h => h.status === 'hafal_lancar' || h.status === 'mutqin').length} dari 37 Surat (Juz 30)
                     </strong>
                   </div>
                   <div className="p-3 rounded-xl bg-stone-50 border border-stone-100">
@@ -253,6 +290,7 @@ export default function App() {
                     students={[childStudent]}
                     currentUser={currentUser}
                     onUpdateHafalan={() => {}}
+                    onUpdateDoa={() => {}}
                   />
                 </div>
               )}
@@ -293,6 +331,7 @@ export default function App() {
                   students={students}
                   currentUser={currentUser}
                   onUpdateHafalan={handleUpdateHafalan}
+                  onUpdateDoa={handleUpdateDoa}
                 />
               )}
 
