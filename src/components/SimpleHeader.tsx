@@ -67,7 +67,7 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-bold text-stone-900 tracking-tight">
-                  Laporan Mengaji TPQ Qurrota A'yun
+                  Laporan Mengaji TPQ Qurrata A'yun
                 </h1>
                 <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border ${roleBadge.bg} flex items-center gap-1`}>
                   {roleBadge.icon}

@@ -53,7 +53,7 @@ export const ParentPortalView: React.FC<ParentPortalViewProps> = ({
             </h1>
             <p className="text-xs sm:text-sm text-stone-600 max-w-xl leading-relaxed">
               Berikut adalah rekaman digital progres mengaji, hafalan surat, dan kehadiran ananda{' '}
-              <strong className="text-stone-900">{student.name}</strong> di TPQ Al-Ikhlas.
+              <strong className="text-stone-900">{student.name}</strong> di TPQ Qurrata A'yun.
             </p>
           </div>
 

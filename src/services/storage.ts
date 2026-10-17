@@ -2,6 +2,7 @@ import { User, Student, AttendanceRecord, SetoranRecord, TPQProfile, StudentHafa
 import { INITIAL_USERS, INITIAL_STUDENTS, INITIAL_ATTENDANCE, INITIAL_SETORAN, TPQ_INFO } from '../data/seedData';
 import { JUZ_30_SURAHS, DOA_LIST_DATA } from '../data/quranData';
 import { supabaseService } from './supabaseService';
+import { supabase } from './supabaseClient';
 
 const STORAGE_KEYS = {
   USERS: 'tpq_users_v1',
@@ -130,10 +131,18 @@ export const storage = {
     const raw = localStorage.getItem(STORAGE_KEYS.PROFILE);
     if (!raw) {
       localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(TPQ_INFO));
+      supabaseService.upsertProfile(TPQ_INFO);
       return TPQ_INFO;
     }
     try {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (!parsed.name || parsed.name.includes("Al-Ikhlas") || parsed.name.includes("Qurrota") || parsed.name !== "TPQ Qurrata A'yun") {
+        const updated = { ...parsed, name: "TPQ Qurrata A'yun" };
+        localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(updated));
+        supabaseService.upsertProfile(updated);
+        return updated;
+      }
+      return parsed;
     } catch {
       return TPQ_INFO;
     }
@@ -495,23 +504,23 @@ export const storage = {
 
       let updated = false;
 
-      if (remoteUsers && remoteUsers.length > 0) {
+      if (remoteUsers !== null && remoteUsers.length > 0) {
         localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(remoteUsers));
         updated = true;
       }
-      if (remoteStudents && remoteStudents.length > 0) {
+      if (remoteStudents !== null) {
         localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(remoteStudents));
         updated = true;
       }
-      if (remoteSetoran && remoteSetoran.length > 0) {
+      if (remoteSetoran !== null) {
         localStorage.setItem(STORAGE_KEYS.SETORAN, JSON.stringify(remoteSetoran));
         updated = true;
       }
-      if (remoteAttendance && remoteAttendance.length > 0) {
+      if (remoteAttendance !== null) {
         localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(remoteAttendance));
         updated = true;
       }
-      if (remoteProfile) {
+      if (remoteProfile !== null) {
         localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(remoteProfile));
         updated = true;
       }
@@ -520,6 +529,43 @@ export const storage = {
     } catch (err) {
       console.warn('Supabase sync notice:', err);
       return false;
+    }
+  },
+
+  /**
+   * Berlangganan perubahan data realtime dari Supabase.
+   * Setiap ada penambahan/perubahan/penghapusan data di browser/perangkat manapun,
+   * callback akan dipanggil sehingga seluruh perangkat langsung tersinkronisasi.
+   */
+  subscribeToRemoteChanges(callback: () => void): () => void {
+    if (!supabaseService.isConfigured() || !supabase) return () => {};
+    const client = supabase;
+
+    try {
+      const channel = client
+        .channel('tpq-realtime-sync')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public' },
+          async () => {
+            const hasChanges = await this.initSupabaseSync();
+            if (hasChanges) {
+              callback();
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        try {
+          client.removeChannel(channel);
+        } catch (e) {
+          console.warn('Error removing Supabase channel:', e);
+        }
+      };
+    } catch (e) {
+      console.warn('Realtime subscription not supported, fallback to polling:', e);
+      return () => {};
     }
   },
 

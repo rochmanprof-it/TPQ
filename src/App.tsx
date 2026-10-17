@@ -31,22 +31,62 @@ export default function App() {
   };
 
   useEffect(() => {
-    const loadedStudents = storage.getStudents();
-    const loadedAttendance = storage.getAttendance();
-    const loadedSetoran = storage.getSetoran();
-    setStudents(loadedStudents);
-    setAttendance(loadedAttendance);
-    setSetoran(loadedSetoran);
+    let isMounted = true;
 
-    // Asynchronously sync from Supabase if configured
+    const refreshLocalState = () => {
+      if (!isMounted) return;
+      setStudents([...storage.getStudents()]);
+      setAttendance([...storage.getAttendance()]);
+      setSetoran([...storage.getSetoran()]);
+      setProfile(storage.getProfile());
+    };
+
+    // 1. Initial load from local cache
+    refreshLocalState();
+
+    // 2. Fetch fresh data from Supabase immediately on mount
     storage.initSupabaseSync().then((updated) => {
-      if (updated) {
-        setStudents([...storage.getStudents()]);
-        setAttendance([...storage.getAttendance()]);
-        setSetoran([...storage.getSetoran()]);
-        setProfile(storage.getProfile());
+      if (updated && isMounted) {
+        refreshLocalState();
       }
     });
+
+    // 3. Realtime Supabase listener across devices
+    const unsubscribe = storage.subscribeToRemoteChanges(() => {
+      if (isMounted) {
+        refreshLocalState();
+      }
+    });
+
+    // 4. Auto sync when device/browser tab becomes active
+    const handleActive = () => {
+      if (document.visibilityState === 'visible') {
+        storage.initSupabaseSync().then((updated) => {
+          if (updated && isMounted) {
+            refreshLocalState();
+          }
+        });
+      }
+    };
+    document.addEventListener('visibilitychange', handleActive);
+    window.addEventListener('focus', handleActive);
+
+    // 5. Polling fallback every 12 seconds for cross-device sync guarantee
+    const syncInterval = setInterval(() => {
+      storage.initSupabaseSync().then((updated) => {
+        if (updated && isMounted) {
+          refreshLocalState();
+        }
+      });
+    }, 12000);
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+      document.removeEventListener('visibilitychange', handleActive);
+      window.removeEventListener('focus', handleActive);
+      clearInterval(syncInterval);
+    };
   }, []);
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { storage } from './storage';
+import { supabaseService } from './supabaseService';
 import { User } from '../types';
 
 type AuthListener = (user: User | null) => void;
@@ -27,6 +28,15 @@ export function useAuth() {
     // Sync current active user on mount
     const active = storage.getActiveUser();
     setUser(active);
+
+    // If Supabase is connected, refresh users in background so newly registered users can log in
+    if (supabaseService.isConfigured()) {
+      supabaseService.fetchUsers().then((remoteUsers) => {
+        if (remoteUsers && remoteUsers.length > 0) {
+          localStorage.setItem('tpq_users_v1', JSON.stringify(remoteUsers));
+        }
+      }).catch((e) => console.warn('Background user sync notice:', e));
+    }
 
     const listener: AuthListener = (newUser) => {
       setUser(newUser);
@@ -71,7 +81,20 @@ export function useAuth() {
         return { success: false, error: message };
       }
 
-      const users = storage.getUsers();
+      // If Supabase is connected, always fetch latest users first so newly created accounts
+      // or changed passwords on another browser/device can log in immediately
+      let users = storage.getUsers();
+      if (supabaseService.isConfigured()) {
+        try {
+          const remoteUsers = await supabaseService.fetchUsers();
+          if (remoteUsers && remoteUsers.length > 0) {
+            localStorage.setItem('tpq_users_v1', JSON.stringify(remoteUsers));
+            users = remoteUsers;
+          }
+        } catch (err) {
+          console.warn('Supabase users fetch failed during sign in, fallback to local cache:', err);
+        }
+      }
 
       // Match by email, username, or common aliases
       const matchedUser = users.find((u) => {
